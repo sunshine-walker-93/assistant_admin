@@ -1,14 +1,15 @@
 import axios from 'axios'
+import type { AxiosInstance, AxiosRequestConfig } from 'axios'
 import { getToken, removeToken } from './storage'
 
 // 创建axios实例
-const request = axios.create({
+const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 10000
 })
 
 // 请求拦截器
-request.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     const token = getToken()
     if (token) {
@@ -21,8 +22,8 @@ request.interceptors.request.use(
   }
 )
 
-// 响应拦截器
-request.interceptors.response.use(
+// 响应拦截器 - 返回 response.data 而不是整个 response
+axiosInstance.interceptors.response.use(
   (response) => {
     return response.data
   },
@@ -35,6 +36,26 @@ request.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// 创建类型化的 request 对象
+// 由于响应拦截器返回 response.data，所以这里直接返回 Promise<T>
+const request = {
+  get: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+    return axiosInstance.get(url, config) as Promise<T>
+  },
+  post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return axiosInstance.post(url, data, config) as Promise<T>
+  },
+  put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return axiosInstance.put(url, data, config) as Promise<T>
+  },
+  delete: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+    return axiosInstance.delete(url, config) as Promise<T>
+  },
+  patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+    return axiosInstance.patch(url, data, config) as Promise<T>
+  }
+}
 
 export default request
 

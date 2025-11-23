@@ -1,0 +1,47 @@
+# 依赖目录
+node_modules
+
+# 构建产物
+dist
+dist-ssr
+
+# Git 相关
+.git
+.gitignore
+
+# 编辑器配置
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# 日志文件
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 测试相关
+coverage
+.nyc_output
+
+# 其他
+README.md
+docs
+

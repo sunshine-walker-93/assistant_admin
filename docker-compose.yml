@@ -1,0 +1,24 @@
+services:
+  frontend-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # 构建时传入 API 基础 URL
+        # 如果网关在容器内，使用容器服务名；如果网关在宿主机，使用宿主机地址
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://assistant-gateway-app:8080}
+    image: assistant-admin:latest
+    container_name: assistant-admin-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - assistant-net
+
+networks:
+  # 复用网关项目中由 docker compose 创建的 assistant-net 网络
+  # 与网关服务共享同一个网络，便于服务间通信
+  assistant-net:
+    external:
+      name: assistant_assistant-net
+
