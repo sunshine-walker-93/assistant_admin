@@ -2,14 +2,14 @@ import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig } from 'axios'
 import { getToken, removeToken } from './storage'
 
-// 创建axios实例
-const axiosInstance: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+// 创建专门用于网关管理服务的axios实例
+const adminAxiosInstance: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || 'http://localhost:8081',
   timeout: 10000
 })
 
 // 请求拦截器
-axiosInstance.interceptors.request.use(
+adminAxiosInstance.interceptors.request.use(
   (config) => {
     const token = getToken()
     if (token) {
@@ -22,8 +22,8 @@ axiosInstance.interceptors.request.use(
   }
 )
 
-// 响应拦截器 - 返回 response.data 而不是整个 response
-axiosInstance.interceptors.response.use(
+// 响应拦截器
+adminAxiosInstance.interceptors.response.use(
   (response) => {
     // 204 No Content 响应没有响应体，直接返回
     if (response.status === 204) {
@@ -42,7 +42,6 @@ axiosInstance.interceptors.response.use(
     // 提取友好的错误消息
     let errorMessage = '请求失败，请稍后重试'
     if (error.response) {
-      // 服务器返回了错误响应
       const status = error.response.status
       const data = error.response.data
       
@@ -71,10 +70,8 @@ axiosInstance.interceptors.response.use(
         }
       }
     } else if (error.request) {
-      // 请求已发出但没有收到响应
       errorMessage = '网络错误，请检查网络连接'
     } else {
-      // 请求配置出错
       errorMessage = error.message || '请求配置错误'
     }
     
@@ -82,25 +79,24 @@ axiosInstance.interceptors.response.use(
   }
 )
 
-// 创建类型化的 request 对象
-// 由于响应拦截器返回 response.data，所以这里直接返回 Promise<T>
-const request = {
+// 创建类型化的 admin request 对象
+const adminRequest = {
   get: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    return axiosInstance.get(url, config) as Promise<T>
+    return adminAxiosInstance.get(url, config) as Promise<T>
   },
   post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return axiosInstance.post(url, data, config) as Promise<T>
+    return adminAxiosInstance.post(url, data, config) as Promise<T>
   },
   put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return axiosInstance.put(url, data, config) as Promise<T>
+    return adminAxiosInstance.put(url, data, config) as Promise<T>
   },
   delete: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-    return axiosInstance.delete(url, config) as Promise<T>
+    return adminAxiosInstance.delete(url, config) as Promise<T>
   },
   patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-    return axiosInstance.patch(url, data, config) as Promise<T>
+    return adminAxiosInstance.patch(url, data, config) as Promise<T>
   }
 }
 
-export default request
+export default adminRequest
 

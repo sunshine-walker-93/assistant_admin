@@ -18,9 +18,29 @@ const router = createRouter({
     },
     {
       path: '/',
+      component: () => import('../components/Layout.vue'),
+      meta: { requiresAuth: true },
+      redirect: '/profile',
+      children: [
+        {
+          path: 'profile',
+          name: 'Profile',
+          component: () => import('../views/Profile.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'gateway',
+          name: 'Gateway',
+          component: () => import('../views/Gateway.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'home',
       name: 'Home',
       component: () => import('../views/Home.vue'),
       meta: { requiresAuth: true }
+        }
+      ]
     },
     {
       path: '/:pathMatch(.*)*',
