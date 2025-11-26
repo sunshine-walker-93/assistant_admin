@@ -142,9 +142,10 @@ const handleLogout = () => {
 
 .content {
   background-color: #f0f2f5;
-  padding: 20px;
+  padding: 8px;
   overflow-y: auto;
   height: calc(100vh - 60px);
+  box-sizing: border-box;
 }
 </style>
 
