@@ -162,6 +162,7 @@ docker-compose down
 ```bash
 docker build -t assistant-admin:latest \
   --build-arg VITE_API_BASE_URL=http://assistant-gateway-app:8080 \
+  --build-arg VITE_ADMIN_API_BASE_URL=http://assistant-gateway-admin-app:8081 \
   .
 ```
 
@@ -177,15 +178,22 @@ docker run -d \
 
 ### 环境变量配置
 
-在容器化部署时，可以通过构建参数 `VITE_API_BASE_URL` 配置 API 基础地址：
+在容器化部署时，可以通过构建参数配置 API 基础地址：
 
+#### 网关服务地址 (`VITE_API_BASE_URL`)
 - **网关在容器内**：使用容器服务名，如 `http://assistant-gateway-app:8080`
 - **网关在宿主机**：使用宿主机地址，如 `http://host.docker.internal:8080` 或 `http://localhost:8080`
 
-在 `docker-compose.yml` 中可以通过环境变量 `VITE_API_BASE_URL` 覆盖默认值：
+#### 网关管理服务地址 (`VITE_ADMIN_API_BASE_URL`)
+- **管理服务在容器内**：使用容器服务名，如 `http://assistant-gateway-admin-app:8081`
+- **管理服务在宿主机**：使用宿主机地址，如 `http://host.docker.internal:8081` 或 `http://localhost:8081`
+
+在 `docker-compose.yml` 中可以通过环境变量覆盖默认值：
 
 ```bash
-VITE_API_BASE_URL=http://your-gateway-url:8080 docker-compose up -d
+VITE_API_BASE_URL=http://your-gateway-url:8080 \
+VITE_ADMIN_API_BASE_URL=http://your-admin-url:8081 \
+docker-compose up -d
 ```
 
 ### 访问应用
@@ -197,10 +205,16 @@ VITE_API_BASE_URL=http://your-gateway-url:8080 docker-compose up -d
 创建 `.env` 文件（可参考 `.env.example`）：
 
 ```env
+# 网关服务 API 基础地址（用于用户认证等业务接口）
 VITE_API_BASE_URL=http://localhost:8080
+
+# 网关管理服务 API 基础地址（用于后端服务和路由配置管理接口）
+VITE_ADMIN_API_BASE_URL=http://localhost:8081
 ```
 
-**说明**：项目通过网关（assistant_gateway）调用后端服务，默认网关地址为 `http://localhost:8080`。
+**说明**：
+- `VITE_API_BASE_URL`：用于通过网关（assistant_gateway）调用后端业务服务，默认地址为 `http://localhost:8080`
+- `VITE_ADMIN_API_BASE_URL`：用于调用网关管理服务（assistant_gateway_admin）的配置管理接口，默认地址为 `http://localhost:8081`
 
 ## API 接口
 

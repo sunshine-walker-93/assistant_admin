@@ -16,6 +16,11 @@ COPY . .
 ARG VITE_API_BASE_URL=http://assistant-gateway-app:8080
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
+# 构建参数：网关管理服务 API 基础 URL
+# 注意：浏览器在宿主机上运行，应使用 localhost 访问映射的端口
+ARG VITE_ADMIN_API_BASE_URL=http://localhost:8081
+ENV VITE_ADMIN_API_BASE_URL=$VITE_ADMIN_API_BASE_URL
+
 # 构建项目
 RUN npm run build
 
