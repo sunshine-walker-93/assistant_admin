@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { login as loginApi, register as registerApi } from '../services/auth.service'
 import type { LoginParams, RegisterParams } from '../services/auth.service'
-import { setToken, getToken, removeToken } from '../utils/storage'
+import { setToken, getToken, removeToken, setUserInfo, getUserInfo, removeUserInfo } from '../utils/storage'
 
 export interface UserInfo {
   id: string
@@ -11,9 +11,12 @@ export interface UserInfo {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(getToken())
-  const userInfo = ref<UserInfo | null>(null)
-  const isAuthenticated = ref<boolean>(!!getToken())
+  const tokenFromStorage = getToken()
+  const userFromStorage = getUserInfo<UserInfo | null>()
+
+  const token = ref<string | null>(tokenFromStorage)
+  const userInfo = ref<UserInfo | null>(userFromStorage)
+  const isAuthenticated = ref<boolean>(!!tokenFromStorage)
 
   /**
    * 登录
@@ -25,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
       userInfo.value = response.user
       isAuthenticated.value = true
       setToken(response.token)
+      setUserInfo(response.user)
       return response
     } catch (error) {
       throw error
@@ -43,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
         userInfo.value = response.user
         isAuthenticated.value = true
         setToken(response.token)
+        setUserInfo(response.user)
       }
       return response
     } catch (error) {
@@ -58,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
     userInfo.value = null
     isAuthenticated.value = false
     removeToken()
+    removeUserInfo()
   }
 
   return {

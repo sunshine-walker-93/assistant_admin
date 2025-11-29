@@ -6,9 +6,14 @@
           <template #header>
             <div class="card-header">
               <span>个人信息</span>
-              <el-button type="primary" size="small" @click="handleEditProfile">
-                {{ isEditing ? '取消' : '编辑' }}
-              </el-button>
+              <div class="card-header-actions">
+                <el-button type="primary" size="small" @click="handleEditProfile">
+                  {{ isEditing ? '取消' : '编辑' }}
+                </el-button>
+                <el-button type="primary" size="small" @click="showChangePassword = !showChangePassword">
+                  {{ showChangePassword ? '收起密码' : '编辑密码' }}
+                </el-button>
+              </div>
             </div>
           </template>
           <el-form
@@ -41,21 +46,15 @@
               {{ authStore.userInfo?.id || '-' }}
             </el-descriptions-item>
           </el-descriptions>
-        </el-card>
-      </el-col>
-      
-      <el-col :span="24" style="margin-top: 20px">
-        <el-card>
-          <template #header>
-            <div class="card-header">
-              <span>修改密码</span>
-            </div>
-          </template>
+          
+          <!-- 密码修改表单 -->
           <el-form
             :model="passwordForm"
             :rules="passwordRules"
             ref="passwordFormRef"
             label-width="100px"
+            v-if="showChangePassword"
+            style="margin-top: 20px"
           >
             <el-form-item label="当前密码" prop="oldPassword">
               <el-input
@@ -97,8 +96,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore, type UserInfo } from '../stores/auth'
 import { getUser, updateUser } from '../services/auth.service'
+import { setUserInfo, getUserInfo } from '../utils/storage'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -156,6 +156,8 @@ const handleSaveProfile = async () => {
     if (authStore.userInfo) {
       authStore.userInfo.username = response.user.username
       authStore.userInfo.email = response.user.email
+      // 同步更新本地缓存
+      setUserInfo(authStore.userInfo)
     }
     
     ElMessage.success('个人信息更新成功')
@@ -170,6 +172,7 @@ const handleSaveProfile = async () => {
 }
 
 // 修改密码
+const showChangePassword = ref(false)
 const changingPassword = ref(false)
 const passwordFormRef = ref<FormInstance>()
 const passwordForm = reactive({
@@ -220,6 +223,8 @@ const handleChangePassword = async () => {
     passwordForm.newPassword = ''
     passwordForm.confirmPassword = ''
     passwordFormRef.value.resetFields()
+    // 收起密码修改表单
+    showChangePassword.value = false
     
     // 修改密码后自动退出登录
     setTimeout(() => {
@@ -237,7 +242,27 @@ const handleChangePassword = async () => {
 
 // 加载用户信息
 const loadUserInfo = async () => {
-  if (!authStore.userInfo?.id) return
+  // 如果已登录但没有用户信息，尝试从本地缓存恢复
+  if (authStore.isAuthenticated && !authStore.userInfo) {
+    const cachedUserInfo = getUserInfo<UserInfo>()
+    if (cachedUserInfo) {
+      authStore.userInfo = cachedUserInfo
+    } else {
+      console.warn('用户信息丢失，请重新登录')
+      return
+    }
+  }
+  
+  // 如果未登录，不需要加载
+  if (!authStore.isAuthenticated) {
+    return
+  }
+  
+  // 如果没有用户ID，无法从后端加载
+  if (!authStore.userInfo?.id) {
+    console.warn('用户ID缺失，无法加载用户信息')
+    return
+  }
   
   try {
     loading.value = true
@@ -246,6 +271,12 @@ const loadUserInfo = async () => {
     if (authStore.userInfo) {
       authStore.userInfo.username = response.user.username
       authStore.userInfo.email = response.user.email
+      // 同步更新本地缓存
+      setUserInfo(authStore.userInfo)
+    } else {
+      // 如果 store 中还没有用户信息，直接设置
+      authStore.userInfo = response.user
+      setUserInfo(response.user)
     }
   } catch (error: any) {
     // 加载失败不影响页面显示，只记录错误
@@ -270,9 +301,17 @@ onMounted(() => {
 }
 
 .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 16px;
   font-weight: 600;
   color: #303133;
+}
+
+.card-header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 :deep(.el-descriptions) {
