@@ -53,7 +53,7 @@ const loadAgents = async () => {
     
     // 默认选择第一个活跃的 Agent
     if (availableAgents.value.length > 0 && !selectedAgent.value) {
-      const activeAgent = availableAgents.value.find((a) => a.is_active)
+      const activeAgent = availableAgents.value.find((a) => a.isActive)
       if (activeAgent) {
         selectedAgent.value = activeAgent
         selectedAgentName.value = activeAgent.name

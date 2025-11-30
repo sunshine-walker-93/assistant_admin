@@ -21,7 +21,7 @@
           >
             <div class="agent-header">
               <h4>{{ agent.name }}</h4>
-              <el-tag v-if="agent.is_active" type="success" size="small">活跃</el-tag>
+              <el-tag v-if="agent.isActive" type="success" size="small">活跃</el-tag>
               <el-tag v-else type="info" size="small">未激活</el-tag>
             </div>
             <p class="agent-description">{{ agent.description || '暂无描述' }}</p>
@@ -72,7 +72,7 @@ const loadAgents = async () => {
 }
 
 const selectAgent = (agent: AgentInfo) => {
-  if (!agent.is_active) {
+  if (!agent.isActive) {
     ElMessage.warning('该 Agent 未激活，无法使用')
     return
   }

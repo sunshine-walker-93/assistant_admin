@@ -17,10 +17,10 @@
                 :key="agent.name"
                 :label="agent.name"
                 :value="agent.name"
-                :disabled="!agent.is_active"
+                :disabled="!agent.isActive"
               >
                 <span>{{ agent.name }}</span>
-                <el-tag v-if="!agent.is_active" type="info" size="small" style="margin-left: 8px">
+                <el-tag v-if="!agent.isActive" type="info" size="small" style="margin-left: 8px">
                   未激活
                 </el-tag>
               </el-option>
@@ -126,7 +126,7 @@ watch(
   () => props.availableAgents,
   (agents) => {
     if (agents.length > 0 && !selectedAgentName.value) {
-      const activeAgent = agents.find((a) => a.is_active)
+      const activeAgent = agents.find((a) => a.isActive)
       if (activeAgent) {
         selectedAgentName.value = activeAgent.name
       }

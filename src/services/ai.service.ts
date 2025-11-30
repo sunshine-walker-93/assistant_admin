@@ -20,7 +20,7 @@ export interface AgentInfo {
   name: string
   description: string
   capabilities: string[]
-  is_active: boolean
+  isActive: boolean
 }
 
 export interface ListAgentsResponse {
