@@ -58,7 +58,14 @@
           >
             <el-table-column prop="http_method" label="HTTP方法" width="120" />
             <el-table-column prop="http_pattern" label="HTTP路径" min-width="200" />
-            <el-table-column prop="backend_name" label="后端服务" width="150" />
+            <el-table-column prop="backend_name" label="后端服务" width="150">
+              <template #default="{ row }">
+                <span>{{ row.backend_name }}</span>
+                <el-tag v-if="row.backend_name === 'ai'" type="success" size="small" style="margin-left: 4px">
+                  AI
+                </el-tag>
+              </template>
+            </el-table-column>
             <el-table-column prop="backend_service" label="gRPC服务" min-width="200" />
             <el-table-column prop="backend_method" label="gRPC方法" width="150" />
             <el-table-column prop="timeout_ms" label="超时(ms)" width="120">
@@ -165,12 +172,54 @@
             v-model="routeForm.backend_service"
             placeholder="如 user.v1.UserService"
           />
+          <div v-if="isAIBackend" class="form-tip">
+            <el-alert
+              type="info"
+              :closable="false"
+              show-icon
+              style="margin-top: 8px"
+            >
+              <template #title>
+                <div style="font-size: 12px">
+                  <strong>AI 服务配置提示：</strong><br />
+                  gRPC 服务: <code>ai.v1.AIService</code><br />
+                  可用方法: <code>Process</code>, <code>ProcessStream</code>, <code>ListAgents</code>
+                </div>
+              </template>
+            </el-alert>
+          </div>
         </el-form-item>
         <el-form-item label="gRPC方法" prop="backend_method">
           <el-input
             v-model="routeForm.backend_method"
             placeholder="如 Login"
           />
+          <div v-if="isAIBackend && !routeForm.backend_method" class="form-tip">
+            <div style="font-size: 12px; color: #909399; margin-top: 4px">
+              推荐路径：
+              <el-button
+                type="text"
+                size="small"
+                @click="fillAITemplate('process')"
+              >
+                /v1/ai/process → Process
+              </el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="fillAITemplate('stream')"
+              >
+                /v1/ai/process/stream → ProcessStream
+              </el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="fillAITemplate('agents')"
+              >
+                /v1/ai/agents → ListAgents
+              </el-button>
+            </div>
+          </div>
         </el-form-item>
         <el-form-item label="超时时间(ms)" prop="timeout_ms">
           <el-input-number
@@ -254,6 +303,41 @@ const currentRoute = ref<Route | null>(null)
 const routeDialogTitle = computed(() => {
   return isEditingRoute.value ? '编辑路由' : '添加路由'
 })
+
+const isAIBackend = computed(() => {
+  return routeForm.backend_name === 'ai' || 
+         backendList.value.find(b => b.name === routeForm.backend_name && b.name === 'ai')
+})
+
+const fillAITemplate = (type: 'process' | 'stream' | 'agents') => {
+  const templates = {
+    process: {
+      http_pattern: '/v1/ai/process',
+      backend_service: 'ai.v1.AIService',
+      backend_method: 'Process',
+      timeout_ms: 30000
+    },
+    stream: {
+      http_pattern: '/v1/ai/process/stream',
+      backend_service: 'ai.v1.AIService',
+      backend_method: 'ProcessStream',
+      timeout_ms: 60000
+    },
+    agents: {
+      http_pattern: '/v1/ai/agents',
+      backend_service: 'ai.v1.AIService',
+      backend_method: 'ListAgents',
+      timeout_ms: 5000
+    }
+  }
+  
+  const template = templates[type]
+  routeForm.http_method = type === 'agents' ? 'GET' : 'POST'
+  routeForm.http_pattern = template.http_pattern
+  routeForm.backend_service = template.backend_service
+  routeForm.backend_method = template.backend_method
+  routeForm.timeout_ms = template.timeout_ms
+}
 
 const routeForm = reactive<{
   id?: number

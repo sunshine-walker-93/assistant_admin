@@ -18,6 +18,10 @@
           <el-icon><Connection /></el-icon>
           <span>网关管理</span>
         </el-menu-item>
+        <el-menu-item index="/ai">
+          <el-icon><ChatLineRound /></el-icon>
+          <span>智能助手</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container class="main-container">
@@ -43,7 +47,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Connection } from '@element-plus/icons-vue'
+import { User, Connection, ChatLineRound } from '@element-plus/icons-vue'
 import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
