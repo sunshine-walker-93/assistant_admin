@@ -315,7 +315,7 @@ const fillAITemplate = (type: 'process' | 'stream' | 'agents') => {
       http_pattern: '/v1/ai/process',
       backend_service: 'ai.v1.AIService',
       backend_method: 'Process',
-      timeout_ms: 30000
+      timeout_ms: 60000
     },
     stream: {
       http_pattern: '/v1/ai/process/stream',

@@ -45,7 +45,7 @@ HTTP路径: /v1/ai/process
 后端服务: ai
 gRPC服务: ai.v1.AIService
 gRPC方法: Process
-超时时间(ms): 30000
+超时时间(ms): 60000
 描述: Unified entry point for AI processing
 启用: ✓
 ```
@@ -253,7 +253,7 @@ curl -X POST http://localhost:8081/api/v1/routes \
     "backend_name": "ai",
     "backend_service": "ai.v1.AIService",
     "backend_method": "Process",
-    "timeout_ms": 30000,
+    "timeout_ms": 60000,
     "description": "Unified entry point for AI processing",
     "enabled": true
   }'

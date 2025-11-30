@@ -46,6 +46,14 @@ export function processStream(
   return new Promise((resolve, reject) => {
     const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
     const token = localStorage.getItem('token')
+    const timeoutMs = 60000 // 60 秒超时
+    
+    // 创建 AbortController 用于超时控制
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => {
+      controller.abort()
+      reject(new Error('请求超时，请稍后重试'))
+    }, timeoutMs)
     
     fetch(`${baseURL}/v1/ai/process/stream`, {
       method: 'POST',
@@ -53,15 +61,18 @@ export function processStream(
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
-      body: JSON.stringify(req)
+      body: JSON.stringify(req),
+      signal: controller.signal
     })
       .then(response => {
         if (!response.ok) {
+          clearTimeout(timeoutId)
           throw new Error(`HTTP error! status: ${response.status}`)
         }
         
         const reader = response.body?.getReader()
         if (!reader) {
+          clearTimeout(timeoutId)
           throw new Error('Stream not supported')
         }
         
@@ -71,6 +82,7 @@ export function processStream(
         const readChunk = () => {
           reader.read().then(({ done, value }) => {
             if (done) {
+              clearTimeout(timeoutId)
               resolve()
               return
             }
@@ -91,12 +103,22 @@ export function processStream(
             }
             
             readChunk()
-          }).catch(reject)
+          }).catch(err => {
+            clearTimeout(timeoutId)
+            reject(err)
+          })
         }
         
         readChunk()
       })
-      .catch(reject)
+      .catch(err => {
+        clearTimeout(timeoutId)
+        if (err.name === 'AbortError') {
+          reject(new Error('请求超时，请稍后重试'))
+        } else {
+          reject(err)
+        }
+      })
   })
 }
 

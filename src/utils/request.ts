@@ -5,7 +5,7 @@ import { getToken, removeToken } from './storage'
 // 创建axios实例
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000
+  timeout: 60000 // 增加到 60 秒，与网关流式响应超时一致
 })
 
 // 请求拦截器
